@@ -1,7 +1,9 @@
 'use server';
 
-export let name = '';
+import { getSystemMetrics, startSystemMetrics, SystemMetrics } from "./system-metrics.ts";
 
-export function action(formData: FormData) {
-  name = (formData.get('name') as string) || '';
+startSystemMetrics()
+
+export function getMetrics(): SystemMetrics {
+  return getSystemMetrics();
 }
