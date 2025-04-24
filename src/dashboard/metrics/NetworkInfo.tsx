@@ -1,6 +1,6 @@
 "use client";
 
-import { formatBytes } from '@/formatUtils';
+import { formatBytes } from '@/format-utils';
 import type { Network } from '@/system-metrics.ts';
 
 export function NetworkInfo({ network }: { network: Network }) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatFrequency, formatPercentage } from '@/formatUtils';
+import { formatFrequency, formatPercentage } from '@/format-utils';
 import type { GPU } from '@/system-metrics.ts';
 
 export function GPUInfo({ gpu }: { gpu: GPU }) {

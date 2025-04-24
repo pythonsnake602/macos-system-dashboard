@@ -1,7 +1,7 @@
 "use client";
 
 import type { Disk } from '@/system-metrics';
-import { formatBytes } from "@/formatUtils";
+import { formatBytes } from "@/format-utils";
 
 export function DiskInfo({ disk }: { disk: Disk }) {
   return (
