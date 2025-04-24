@@ -1,5 +1,3 @@
-import { spawn } from "node:child_process";
-import plist from "plist";
 import { z } from "zod";
 
 const DvfmStateSchema = z.object({
@@ -83,19 +81,23 @@ const ProcessorSchema = z.object({
 
 const ThermalSchema = z.enum(["Nominal", "Moderate", "Heavy"]);
 
-const PowerMetricsSchema = z.object({
+export const PowerMetricsSchema = z.object({
   is_delta: z.boolean(),
   elapsed_ns: z.number(),
   hw_model: z.string(),
   kern_osversion: z.string(),
   kern_bootargs: z.string(),
   kern_boottime: z.number(),
-  timestamp: z.date(),
+  timestamp: z.coerce.date(),
   network: NetworkSchema,
   disk: DiskSchema,
   processor: ProcessorSchema,
   thermal_pressure: ThermalSchema,
   gpu: GPUSchema,
+});
+
+export const SystemMetricsSchema = z.object({
+  powerMetrics: z.optional(PowerMetricsSchema),
 });
 
 export type DvfmState = z.infer<typeof DvfmStateSchema>;
@@ -109,69 +111,4 @@ export type Processor = z.infer<typeof ProcessorSchema>;
 export type Thermal = z.infer<typeof ThermalSchema>;
 export type GPU = z.infer<typeof GPUSchema>;
 export type PowerMetrics = z.infer<typeof PowerMetricsSchema>;
-
-export type SystemMetrics = {
-  power_metrics: PowerMetrics | null
-};
-
-let latestPowerMetricsData: PowerMetrics | null = null;
-let buffer = "";
-let powermetricsProcess = null;
-
-function startPowermetricsProcess() {
-  console.log("Starting powermetrics process...");
-  // Clear the buffer when restarting to prevent XML parsing errors
-  buffer = "";
-
-  powermetricsProcess = spawn(
-    "sudo",
-    ["powermetrics", "--samplers", "network,disk,cpu_power,thermal,gpu_power,ane_power", "-i", "1000", "--format", "plist"]
-  );
-
-  powermetricsProcess.stdout.on("data", (data) => {
-    buffer += data;
-
-    // Check if the buffer contains a complete plist document
-    if (buffer.includes("</plist>")) {
-      try {
-        const completePlist = buffer.substring(0, buffer.indexOf("</plist>") + 8);
-
-        let parsedPlist = plist.parse(completePlist);
-        let parsed = PowerMetricsSchema.safeParse(parsedPlist);
-        if (parsed.success) {
-          latestPowerMetricsData = parsed.data;
-        } else {
-          console.error("Failed to parse plist data:", parsed.error);
-        }
-
-        buffer = buffer.substring(buffer.indexOf("</plist>") + 8); // Remove processed data from buffer
-      } catch (error) {
-        console.error("Failed to parse plist data:", error);
-        buffer = ""; // Clear buffer on error
-      }
-    }
-  });
-
-  powermetricsProcess.stderr.on("data", (data) => {
-    console.error(`Powermetrics error: ${data}`);
-  });
-
-  powermetricsProcess.on("close", (code, signal) => {
-    console.log(`Powermetrics process exited with code ${code} and signal ${signal}`);
-    // Restart the process if it exits
-    setTimeout(() => {
-      console.log("Restarting powermetrics process...");
-      startPowermetricsProcess();
-    }, 1000); // Wait 1 second before restarting to avoid rapid restarts
-  });
-}
-
-export function startSystemMetrics() {
-  startPowermetricsProcess();
-}
-
-export function getSystemMetrics(): SystemMetrics {
-  return {
-    power_metrics: latestPowerMetricsData
-  };
-}
+export type SystemMetrics = z.infer<typeof SystemMetricsSchema>;

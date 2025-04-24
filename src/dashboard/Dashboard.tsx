@@ -4,9 +4,8 @@ import { useId } from "react";
 import { Responsive, WidthProvider, Layouts } from "react-grid-layout";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 
-import { getMetrics } from "@/actions";
 import { useLocalStorage, useWakeLock } from "@/hooks";
-import type { SystemMetrics } from '@/system-metrics';
+import { SystemMetrics as SystemMetricsType, SystemMetricsSchema } from '@/system-metrics';
 
 import { CPUInfo } from "./metrics/CPUInfo";
 import { DiskInfo } from "./metrics/DiskInfo";
@@ -20,11 +19,22 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const queryClient = new QueryClient();
 
+const fetchMetrics = async () => {
+  const response = await fetch('/api/metrics');
+  if (!response.ok) {
+    throw new Error(
+      'Failed to fetch powermetrics data. ERROR: ' + (await response.text()),
+    );
+  }
+  const json = await response.json();
+  return await SystemMetricsSchema.parseAsync(json) as SystemMetricsType;
+};
+
 function WakeLockCheckbox() {
   const checkboxId = useId();
   const [lock, setLock] = useLocalStorage(
     false,
-    'powermetrics-dashboard-wake-lock',
+    'macos-system-dashboard-wake-lock',
   );
   useWakeLock(lock);
 
@@ -41,7 +51,7 @@ function WakeLockCheckbox() {
   );
 }
 
-function SystemMetrics({ metrics }: { metrics: SystemMetrics }) {
+function SystemMetrics({ metrics }: { metrics: SystemMetricsType }) {
   const defaultLayouts = {
     lg: [
       { i: 'systemInfo', x: 0, y: 0, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
@@ -63,7 +73,7 @@ function SystemMetrics({ metrics }: { metrics: SystemMetrics }) {
     ],
   };
 
-  const powerMetrics = metrics.power_metrics;
+  const powerMetrics = metrics.powerMetrics;
 
   let metricPanels = powerMetrics ? {
     "cpuInfo": <CPUInfo clusters={powerMetrics.processor.clusters} />,
@@ -75,7 +85,7 @@ function SystemMetrics({ metrics }: { metrics: SystemMetrics }) {
     "thermalInfo": <ThermalInfo thermal={powerMetrics.thermal_pressure} />,
   } : {};
 
-  const [layouts, setLayouts] = useLocalStorage<Layouts>(defaultLayouts, "powermetrics-layouts");
+  const [layouts, setLayouts] = useLocalStorage<Layouts>(defaultLayouts, "macos-system-dashboard-layouts");
 
   return (
     <div className="flex flex-col gap-4">
@@ -114,7 +124,7 @@ function SystemMetrics({ metrics }: { metrics: SystemMetrics }) {
 function Dashboard() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['systemmetrics'],
-    queryFn: getMetrics,
+    queryFn: fetchMetrics,
     refetchInterval: 1000, // Refetch data every 5 seconds
   });
 
