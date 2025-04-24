@@ -45,13 +45,16 @@ const server: Server = useSsl ? createHttpsServer(app) : createHttpServer(app);
 
 app.use(express.static('dist'));
 
-app.get('/api/metrics', (req, res) => {
-  let metrics: SystemMetrics = {
+function getSystemMetrics(): SystemMetrics {
+  return {
     powerMetrics: getLatestPowerMetricsData(),
     memoryPressure: getLatestMemoryPressureData(),
   };
-  res.status(200).json(metrics);
-})
+}
+
+app.get('/api/metrics', (req, res) => {
+  res.status(200).json(getSystemMetrics());
+});
 
 app.get('/', async (req, res) => {
   await renderRequest(req, res, <Page />, {component: Page});

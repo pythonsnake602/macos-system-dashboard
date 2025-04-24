@@ -22,6 +22,7 @@ async function getMemoryPressure() {
 }
 
 export function startMemoryPressurePoll() {
+  console.log("Starting memory pressure poll...");
   setInterval(async () => {
     latestMemoryPressureData = await getMemoryPressure();
   }, 1000);

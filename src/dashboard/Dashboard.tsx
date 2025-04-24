@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useState } from "react";
 import { Responsive, WidthProvider, Layouts } from "react-grid-layout";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 
@@ -133,12 +133,19 @@ function SystemMetrics({ metrics }: { metrics: SystemMetricsType }) {
   );
 }
 
-function Dashboard() {
+function Dashboard({ initialMetrics }: { initialMetrics: SystemMetricsType }) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['systemmetrics'],
     queryFn: fetchMetrics,
     refetchInterval: 1000, // Refetch data every 5 seconds
+    initialData: initialMetrics,
   });
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <div className="p-2">
@@ -150,17 +157,17 @@ function Dashboard() {
         </div>
       )}
 
-      {data && !isError && !isLoading && (
+      {isClient && data && !isError && !isLoading && (
         <SystemMetrics metrics={data} />
       )}
     </div>
   );
 }
 
-export function DashboardPage() {
+export function DashboardPage({ initialMetrics }: { initialMetrics: SystemMetricsType }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <Dashboard />
+      <Dashboard initialMetrics={initialMetrics} />
     </QueryClientProvider>
   );
 }
