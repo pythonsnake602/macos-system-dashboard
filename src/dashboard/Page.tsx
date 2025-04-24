@@ -11,6 +11,7 @@ export async function Page() {
     <html lang="en">
       <head>
         <title>macOS System Dashboard</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body className="bg-slate-900 text-gray-100">
           <div className="p-4 flex flex-col items-stretch">
