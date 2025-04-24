@@ -5,7 +5,7 @@ import type { GPU } from '@/system-metrics.ts';
 
 export function GPUInfo({ gpu }: { gpu: GPU }) {
   return (
-    <div className="bg-slate-800 p-4 rounded-lg shadow-md">
+    <div className="bg-slate-800 rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-2">GPU</h2>
       <p>
         <span className="font-semibold">Frequency:</span>{' '}

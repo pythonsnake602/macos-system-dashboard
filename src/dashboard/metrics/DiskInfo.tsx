@@ -5,7 +5,7 @@ import { formatBytes } from "@/format-utils";
 
 export function DiskInfo({ disk }: { disk: Disk }) {
   return (
-    <div className="bg-slate-800 p-4 rounded-lg shadow-md @container">
+    <div className="bg-slate-800 rounded-lg shadow-md @container">
       <h2 className="text-xl font-bold mb-2">Disk</h2>
       <div className="grid @md:grid-cols-2 grid-cols-1 gap-2">
         <div>

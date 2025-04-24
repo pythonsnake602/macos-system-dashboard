@@ -5,7 +5,7 @@ import type { Network } from '@/system-metrics.ts';
 
 export function NetworkInfo({ network }: { network: Network }) {
   return (
-    <div className="bg-slate-800 p-4 rounded-lg shadow-md @container">
+    <div className="bg-slate-800 rounded-lg shadow-md @container">
       <h2 className="text-xl font-bold mb-2">Network</h2>
       <div className="grid @md:grid-cols-2 grid-cols-1 gap-2">
         <div>

@@ -14,6 +14,7 @@ import { NetworkInfo } from "./metrics/NetworkInfo";
 import { PowerConsumptionInfo } from "./metrics/PowerConsumptionInfo";
 import { SystemInfo } from "./metrics/SystemInfo";
 import { ThermalInfo } from "./metrics/ThermalInfo";
+import { MemoryInfo } from "@/dashboard/metrics/MemoryInfo";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -54,22 +55,24 @@ function WakeLockCheckbox() {
 function SystemMetrics({ metrics }: { metrics: SystemMetricsType }) {
   const defaultLayouts = {
     lg: [
-      { i: 'systemInfo', x: 0, y: 0, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
-      { i: 'thermalInfo', x: 0, y: 1, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'thermalInfo', x: 0, y: 0, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'memoryInfo', x: 0, y: 2, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
       { i: 'cpuInfo', x: 1, y: 0, w: 1, h: 4, minW: 1, minH: 2, maxW: 4 },
       { i: 'powerInfo', x: 2, y: 0, w: 1, h: 4, minW: 1, minH: 2, maxW: 4 },
       { i: 'gpuInfo', x: 3, y: 0, w: 1, h: 4, minW: 1, minH: 2, maxW: 4 },
-      { i: 'networkInfo', x: 2, y: 6, w: 2, h: 2, minW: 1, minH: 2, maxW: 4 },
-      { i: 'diskInfo', x: 0, y: 6, w: 2, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'diskInfo', x: 0, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'networkInfo', x: 1, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'systemInfo', x: 2, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
     ],
     md: [
-      { i: 'systemInfo', x: 0, y: 0, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
-      { i: 'thermalInfo', x: 0, y: 1, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'thermalInfo', x: 0, y: 0, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'memoryInfo', x: 0, y: 2, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
       { i: 'cpuInfo', x: 1, y: 0, w: 1, h: 4, minW: 1, minH: 2, maxW: 4 },
       { i: 'powerInfo', x: 2, y: 0, w: 1, h: 4, minW: 1, minH: 2, maxW: 4 },
       { i: 'gpuInfo', x: 0, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
       { i: 'diskInfo', x: 1, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
       { i: 'networkInfo', x: 2, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'systemInfo', x: 0, y: 6, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
     ],
   };
 
@@ -84,6 +87,15 @@ function SystemMetrics({ metrics }: { metrics: SystemMetricsType }) {
     "systemInfo": <SystemInfo powerMetrics={powerMetrics} />,
     "thermalInfo": <ThermalInfo thermal={powerMetrics.thermal_pressure} />,
   } : {};
+  
+  let memoryPanel = metrics.memoryPressure ? {
+    "memoryInfo": <MemoryInfo memoryPressure={metrics.memoryPressure} />
+  } : {};
+
+  let panels = {
+    ...metricPanels,
+    ...memoryPanel,
+  };
 
   const [layouts, setLayouts] = useLocalStorage<Layouts>(defaultLayouts, "macos-system-dashboard-layouts");
 
@@ -106,12 +118,12 @@ function SystemMetrics({ metrics }: { metrics: SystemMetricsType }) {
         onLayoutChange={(_, allLayouts) => { setLayouts(allLayouts); }}
         margin={[10, 10]}
         containerPadding={[0, 0]}>
-        {Object.entries(metricPanels).map(([key, component]) => (
+        {Object.entries(panels).map(([key, component]) => (
           <div
             key={key}
             className="flex flex-col h-full bg-slate-800 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md relative overflow-hidden select-none">
             <div className="h-2 bg-slate-700 absolute top-0 left-0 right-0 cursor-move rounded-t-lg"></div>
-            <div className="p-2.5 h-full overflow-auto">
+            <div className="p-3 h-full overflow-auto">
               {component}
             </div>
           </div>

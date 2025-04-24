@@ -8,8 +8,9 @@ import {renderRequest, callAction} from '@parcel/rsc/node';
 import yargs from "yargs";
 
 import {Page} from '@/dashboard/Page';
-import { getLatestPowerMetricsData, startPowermetricsProcess } from "@/powermetrics";
 import { SystemMetrics } from "@/system-metrics";
+import { getLatestPowerMetricsData, startPowermetricsProcess } from "@/server/powermetrics";
+import { getLatestMemoryPressureData, startMemoryPressurePoll } from "@/server/memory-pressure";
 
 const argv = yargs(process.argv.slice(2))
   .options({
@@ -36,6 +37,7 @@ function createHttpsServer(app: Express) {
 }
 
 startPowermetricsProcess();
+startMemoryPressurePoll();
 
 const app = express();
 
@@ -46,6 +48,7 @@ app.use(express.static('dist'));
 app.get('/api/metrics', (req, res) => {
   let metrics: SystemMetrics = {
     powerMetrics: getLatestPowerMetricsData(),
+    memoryPressure: getLatestMemoryPressureData(),
   };
   res.status(200).json(metrics);
 })

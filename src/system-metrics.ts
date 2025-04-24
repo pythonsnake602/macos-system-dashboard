@@ -96,8 +96,14 @@ export const PowerMetricsSchema = z.object({
   gpu: GPUSchema,
 });
 
+export const MemoryPressureSchema = z.object({
+  totalMemory: z.number(),
+  memoryUsagePercentage: z.number(),
+})
+
 export const SystemMetricsSchema = z.object({
   powerMetrics: z.optional(PowerMetricsSchema),
+  memoryPressure: z.optional(MemoryPressureSchema),
 });
 
 export type DvfmState = z.infer<typeof DvfmStateSchema>;
@@ -111,4 +117,5 @@ export type Processor = z.infer<typeof ProcessorSchema>;
 export type Thermal = z.infer<typeof ThermalSchema>;
 export type GPU = z.infer<typeof GPUSchema>;
 export type PowerMetrics = z.infer<typeof PowerMetricsSchema>;
+export type MemoryPressure = z.infer<typeof MemoryPressureSchema>;
 export type SystemMetrics = z.infer<typeof SystemMetricsSchema>;
