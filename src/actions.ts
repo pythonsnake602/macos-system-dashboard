@@ -4,6 +4,6 @@ import { getSystemMetrics, startSystemMetrics, SystemMetrics } from "./system-me
 
 startSystemMetrics()
 
-export function getMetrics(): SystemMetrics {
+export async function getMetrics(): Promise<SystemMetrics> {
   return getSystemMetrics();
 }

@@ -70,6 +70,19 @@ const GPUSchema = z.object({
   gpu_energy: z.number(),
 });
 
+const ProcessorSchema = z.object({
+  clusters: z.array(ClusterSchema),
+  cpu_energy: z.number(),
+  cpu_power: z.number(),
+  gpu_energy: z.number(),
+  gpu_power: z.number(),
+  ane_energy: z.number(),
+  ane_power: z.number(),
+  combined_power: z.number(),
+});
+
+const ThermalSchema = z.enum(["Nominal", "Moderate", "Heavy"]);
+
 const PowerMetricsSchema = z.object({
   is_delta: z.boolean(),
   elapsed_ns: z.number(),
@@ -80,17 +93,8 @@ const PowerMetricsSchema = z.object({
   timestamp: z.date(),
   network: NetworkSchema,
   disk: DiskSchema,
-  processor: z.object({
-    clusters: z.array(ClusterSchema),
-    cpu_energy: z.number(),
-    cpu_power: z.number(),
-    gpu_energy: z.number(),
-    gpu_power: z.number(),
-    ane_energy: z.number(),
-    ane_power: z.number(),
-    combined_power: z.number(),
-  }),
-  thermal_pressure: z.enum(["Nominal", "Moderate", "Heavy"]),
+  processor: ProcessorSchema,
+  thermal_pressure: ThermalSchema,
   gpu: GPUSchema,
 });
 
@@ -101,6 +105,8 @@ export type CPU = z.infer<typeof CPUSchema>;
 export type Cluster = z.infer<typeof ClusterSchema>;
 export type Network = z.infer<typeof NetworkSchema>;
 export type Disk = z.infer<typeof DiskSchema>;
+export type Processor = z.infer<typeof ProcessorSchema>;
+export type Thermal = z.infer<typeof ThermalSchema>;
 export type GPU = z.infer<typeof GPUSchema>;
 export type PowerMetrics = z.infer<typeof PowerMetricsSchema>;
 

@@ -2,7 +2,7 @@ import express from 'express';
 import {renderRequest, callAction} from '@parcel/rsc/node';
 
 // Page components. These must have "use server-entry" so they are treated as code splitting entry points.
-import {Page} from './Page';
+import {Page} from './dashboard/Page';
 
 const app = express();
 
