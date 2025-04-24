@@ -1,73 +1,51 @@
-import { spawn } from "node:child_process";
+import * as fs from "node:fs";
+import * as http from "node:http";
+import * as https from "node:https";
+import { Server } from "node:net";
 
-import express from 'express';
+import express, { Express } from 'express';
 import {renderRequest, callAction} from '@parcel/rsc/node';
+import yargs from "yargs";
 
 import {Page} from '@/dashboard/Page';
-import { PowerMetrics, PowerMetricsSchema, SystemMetrics } from "@/system-metrics";
-import plist from "plist";
+import { getLatestPowerMetricsData, startPowermetricsProcess } from "@/powermetrics";
+import { SystemMetrics } from "@/system-metrics";
 
-let latestPowerMetricsData: PowerMetrics | undefined = undefined;
-let buffer = "";
-let powermetricsProcess = null;
+const argv = yargs(process.argv.slice(2))
+  .options({
+    host: { type: "string", alias: "h", default: "localhost" },
+    port: { type: "number", alias: "p", default: 3000 },
+    key: { type: "string" },
+    cert: { type: "string"}
+  })
+  .help()
+  .parseSync();
 
-console.log("Starting powermetrics process...");
-// Clear the buffer when restarting to prevent XML parsing errors
-buffer = "";
+const { host, port, key, cert } = argv;
+const useSsl = key && cert;
 
-function startPowermetricsProcess() {
-  powermetricsProcess = spawn(
-    "sudo",
-    ["powermetrics", "--samplers", "network,disk,cpu_power,thermal,gpu_power,ane_power", "-i", "1000", "--format", "plist"]
-  );
+function createHttpServer(app: Express) { return http.createServer(app) }
+function createHttpsServer(app: Express) {
+  console.log("Using SSL");
 
-  powermetricsProcess.stdout.on("data", (data) => {
-    buffer += data;
-
-    // Check if the buffer contains a complete plist document
-    if (buffer.includes("</plist>")) {
-      try {
-        const completePlist = buffer.substring(0, buffer.indexOf("</plist>") + 8);
-
-        let parsedPlist = plist.parse(completePlist);
-        let parsed = PowerMetricsSchema.safeParse(parsedPlist);
-        if (parsed.success) {
-          latestPowerMetricsData = parsed.data;
-        } else {
-          console.error("Failed to parse plist data:", parsed.error);
-        }
-
-        buffer = buffer.substring(buffer.indexOf("</plist>") + 8); // Remove processed data from buffer
-      } catch (error) {
-        console.error("Failed to parse plist data:", error);
-        buffer = ""; // Clear buffer on error
-      }
-    }
-  });
-
-  powermetricsProcess.stderr.on("data", (data) => {
-    console.error(`Powermetrics error: ${data}`);
-  });
-
-  powermetricsProcess.on("close", (code, signal) => {
-    console.log(`Powermetrics process exited with code ${code} and signal ${signal}`);
-    // Restart the process if it exits
-    setTimeout(() => {
-      console.log("Restarting powermetrics process...");
-      startPowermetricsProcess();
-    }, 1000); // Wait 1 second before restarting to avoid rapid restarts
-  });
+  const options = {
+    key: fs.readFileSync(key!),
+    cert: fs.readFileSync(cert!)
+  };
+  return https.createServer(options, app);
 }
 
 startPowermetricsProcess();
 
 const app = express();
 
+const server: Server = useSsl ? createHttpsServer(app) : createHttpServer(app);
+
 app.use(express.static('dist'));
 
 app.get('/api/metrics', (req, res) => {
   let metrics: SystemMetrics = {
-    powerMetrics: latestPowerMetricsData
+    powerMetrics: getLatestPowerMetricsData(),
   };
   res.status(200).json(metrics);
 })
@@ -86,5 +64,6 @@ app.post('/', async (req, res) => {
   await renderRequest(req, res, root, {component: Page});
 });
 
-app.listen(3000);
-console.log('Server listening on port 3000');
+server.listen(port, host, () => {
+  console.log(`Server listening on ${host}:${port}`);
+});
