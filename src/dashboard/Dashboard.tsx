@@ -69,10 +69,10 @@ function SystemMetrics({ metrics }: { metrics: SystemMetricsType }) {
       { i: 'memoryInfo', x: 0, y: 2, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
       { i: 'cpuInfo', x: 1, y: 0, w: 1, h: 4, minW: 1, minH: 2, maxW: 4 },
       { i: 'powerInfo', x: 2, y: 0, w: 1, h: 4, minW: 1, minH: 2, maxW: 4 },
-      { i: 'gpuInfo', x: 0, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'gpuInfo', x: 0, y: 4, w: 1, h: 4, minW: 1, minH: 2, maxW: 4 },
       { i: 'diskInfo', x: 1, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
-      { i: 'networkInfo', x: 2, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
-      { i: 'systemInfo', x: 0, y: 6, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'networkInfo', x: 1, y: 6, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
+      { i: 'systemInfo', x: 2, y: 4, w: 1, h: 2, minW: 1, minH: 2, maxW: 4 },
     ],
   };
 
@@ -142,7 +142,7 @@ function Dashboard() {
 
   return (
     <div className="p-2">
-      {isLoading && <p>Loading powermetrics data...</p>}
+      {isLoading && <p>Loading data...</p>}
 
       {isError && (
         <div className="bg-red-800 p-4 rounded">
